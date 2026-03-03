@@ -1,16 +1,45 @@
-# React + Vite
+# Personal Task Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fully functional, self-contained task management web application built with React and Vite. Includes login, dashboard with live weather, and a feature-rich task manager — all running locally with zero backend.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Secure login with email validation (no real authentication server)
+- Dashboard with personalized greeting, task statistics, and live weather from Open-Meteo API
+- Task management with title, description, priority (Low/Medium/High), and category (Work/Personal/Shopping)
+- Mark tasks as complete/incomplete, delete tasks, and filter by status or category
+- Sort tasks by priority or date added
+- All data persists in browser localStorage
+- Responsive design that works on mobile and desktop
 
-## React Compiler
+## How to Run Locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Clone this repository
+2. Run `npm install` to install dependencies
+3. Run `npm run dev` to start the development server
+4. Open `http://localhost:5173` in your browser
 
-## Expanding the ESLint configuration
+## Login Credentials
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+This app uses mock authentication:
+- Email: Any valid email address (e.g., `user@example.com`)
+- Password: Any non-empty string
+
+There is no database or backend — login state is stored in `localStorage`.
+
+## Technical Decisions
+
+- **Routing**: Uses React Router v6 with a custom `ProtectedRoute` component to enforce authentication.
+- **Weather API**: Uses Open-Meteo (free, no API key required) with automatic geolocation and graceful fallback.
+- **State Management**: Local state for UI interactions; `localStorage` for for persistent task and auth data.
+- **Styling**: Plain CSS-in-JS (no external CSS files or frameworks) for simplicity and full control.
+- **Error Handling**: Input validation on login and task forms; graceful degradation for weather API failures.
+
+## Challenges Encountered
+
+- Geolocation permissions vary across browsers — added fallback to London coordinates.
+- Open-Meteo returns weather codes instead of strings — mapped to human-readable conditions.s
+- Sorting tasks by priority required defining an explicit order (Low < Medium < High).
+- Ensuring localStorage updates reliably required careful placement of `useEffect` hooks.
+
+l
