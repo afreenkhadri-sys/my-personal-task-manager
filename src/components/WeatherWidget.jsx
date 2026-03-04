@@ -1,100 +1,83 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
 export default function WeatherWidget() {
-  const [weather, setWeather] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  //  FAKE WEATHER BACKUP — shown if real weather fails bc not all browsers support geolocation (mine is blocked by default)
-  const fallbackWeather = {
-    temp: 22,
-    condition: 'Sunny',
-    message: 'Nice day — great for focus!'
-  }
+  const mockWeather = {
+    temperature_2m: 24,
+    weathercode: 1,
+  };
 
   useEffect(() => {
-    let didCancel = false
-    let fetchTimeout = null
+    const fetchWeather = async () => {
+      try {
+        if ('geolocation' in navigator) {
+          try {
+            const position = await new Promise((resolve, reject) =>
+              navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+            );
+            const { latitude, longitude } = position.coords;
 
-    const getLocationAndFetch = () => {
-      if (!navigator.geolocation) {
-        finish()
-        return
+            const res = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode&timezone=auto`
+            );
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+            setWeather(data.current);
+          } catch (err) {
+            console.warn('Geolocation failed, using mock weather:', err);
+            setWeather(mockWeather);
+          }
+        } else {
+          setWeather(mockWeather);
+        }
+      } catch (err) {
+        setWeather(mockWeather);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`
+    fetchWeather();
+  }, []);
 
-          const controller = new AbortController()
-          fetchTimeout = setTimeout(() => controller.abort(), 8000)
+  const getWeatherMessage = (code, temp) => {
+    const conditions = {
+      0: { emoji: '☀️', message: 'Sunny' },
+      1: { emoji: '⛅', message: 'Partly cloudy' },
+      2: { emoji: '☁️', message: 'Cloudy' },
+      3: { emoji: '☁️', message: 'Overcast' },
+      45: { emoji: '🌫️', message: 'Foggy' },
+      48: { emoji: '🌫️', message: 'Foggy' },
+      51: { emoji: '🌧️', message: 'Light drizzle' },
+      53: { emoji: '🌧️', message: 'Drizzle' },
+      55: { emoji: '🌧️', message: 'Heavy drizzle' },
+      61: { emoji: '🌧️', message: 'Light rain' },
+      63: { emoji: '🌧️', message: 'Rain' },
+      65: { emoji: '🌧️', message: 'Heavy rain' },
+      71: { emoji: '❄️', message: 'Light snow' },
+      73: { emoji: '❄️', message: 'Snow' },
+      75: { emoji: '❄️', message: 'Heavy snow' },
+      80: { emoji: '🌧️', message: 'Light rain showers' },
+      81: { emoji: '🌧️', message: 'Rain showers' },
+      82: { emoji: '🌧️', message: 'Heavy rain showers' },
+      95: { emoji: '⛈️', message: 'Thunderstorm' },
+      96: { emoji: '⛈️', message: 'Thunderstorm with hail' },
+      99: { emoji: '⛈️', message: 'Thunderstorm with heavy hail' },
+    };
 
-          fetch(url, { signal: controller.signal })
-            .then((res) => {
-              if (!res.ok) throw new Error('Failed to load weather')
-              return res.json()
-            })
-            .then((data) => {
-              if (didCancel) return
-              const cw = data.current_weather
-              if (!cw) throw new Error('No current weather data')
-              const temp = Math.round(cw.temperature)
-              const code = cw.weathercode
-
-              let condition = 'Sunny'
-              if (code >= 45 && code <= 49) condition = 'Foggy'
-              else if (code >= 51 && code <= 67) condition = 'Rainy'
-              else if (code >= 71 && code <= 77) condition = 'Snowy'
-              else if (code >= 80 && code <= 82) condition = 'Rainy'
-              else if (code >= 85 && code <= 86) condition = 'Snowy'
-              else if (code === 95 || code === 96 || code === 99) condition = 'Stormy'
-
-              let message = 'Nice day — get things done!'
-              if (condition === 'Rainy') message = 'Rainy day — perfect for indoor tasks!'
-              else if (condition === 'Sunny') message = 'Sunny day — great for focus!'
-              else if (condition === 'Stormy') message = 'Stormy weather — stay safe and plan ahead.'
-
-              finish(() => setWeather({ temp, condition, message }))
-            })
-            .catch((err) => {
-              if (didCancel) return
-              finish()
-            })
-            .finally(() => {
-              if (fetchTimeout) clearTimeout(fetchTimeout)
-            })
-        },
-        (err) => {
-          finish()
-        },
-        { timeout: 10000 }
-      )
-    }
-
-    const finish = () => {
-      if (didCancel) return
-      setWeather(fallbackWeather)
-      setLoading(false)
-    }
-
-    getLocationAndFetch()
-
-    return () => {
-      didCancel = true
-    }
-  }, [])
-
-  if (loading) return <div className="weather-widget">Loading weather...</div>
-  if (error) return <div className="weather-widget error">{error}</div>
+    const condition = conditions[code] || { emoji: '🌐', message: 'Unknown' };
+    return `${condition.emoji} ${condition.message} (${temp}°C)`;
+  };
 
   return (
     <div className="weather-widget">
-      <h2>Today's Weather</h2>
-      <p>
-        <strong>{weather.temp}°C</strong>, {weather.condition}
-      </p>
-      <p>{weather.message}</p>
+      <h3>🌤️ Current Weather</h3>
+      {loading ? <p>Loading weather...</p> : <p>{getWeatherMessage(weather.weathercode, weather.temperature_2m)}</p>}
+      <small className="mock-note">
+        {weather?.temperature_2m === 24 && weather?.weathercode === 1 ? 'Mock weather shown (geolocation not available)' : ''}
+      </small>
     </div>
-  )
+  );
 }

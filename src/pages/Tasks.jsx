@@ -1,134 +1,104 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import TaskForm from '../components/TaskForm';
 
 export default function Tasks() {
-  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState('');
-  const [priority, setPriority] = useState('Medium');
+  const [filter, setFilter] = useState('all');
+  const [sort, setSort] = useState('date');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const navigate = useNavigate();
 
-  // Load tasks on mount
   useEffect(() => {
     const savedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
     setTasks(savedTasks);
   }, []);
 
-  // Save tasks whenever they change
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
 
-  const addTask = (e) => {
-    e.preventDefault();
-    if (!newTask.trim()) return;
+  const addTask = (newTask) => setTasks(prev => [newTask, ...prev]);
 
-    const task = {
-      id: Date.now(),
-      text: newTask,
-      priority: priority,
-      completed: false
-    };
+  const toggleTask = (id) => setTasks(prev => prev.map(t => (t.id === id ? { ...t, completed: !t.completed } : t)));
 
-    setTasks([...tasks, task]);
-    setNewTask('');
-  };
+  const deleteTask = (id) => setTasks(prev => prev.filter(t => t.id !== id));
 
-  const toggleTask = (id) => {
-    setTasks(tasks.map(t => 
-      t.id === id ? { ...t, completed: !t.completed } : t
-    ));
-  };
+  const filteredTasks = tasks
+    .filter(task => (filter === 'completed' ? task.completed : filter === 'active' ? !task.completed : true))
+    .filter(task => (categoryFilter === 'all' ? true : task.category === categoryFilter))
+    .sort((a, b) => (sort === 'priority' ? ({ High:0, Medium:1, Low:2 }[a.priority] - { High:0, Medium:1, Low:2 }[b.priority]) : new Date(b.createdAt) - new Date(a.createdAt)));
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(t => t.id !== id));
+  const categories = [...new Set(tasks.map(t => t.category))];
+
+  const logout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userEmail');
+    navigate('/login', { replace: true });
   };
 
   return (
-    <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-      <button 
-        onClick={() => navigate('/dashboard')}
-        style={{ marginBottom: '20px', cursor: 'pointer', padding: '5px 10px' }}
-      >
-        &larr; Back to Dashboard
-      </button>
+    <div className="tasks-page">
+      <div className="tasks-header">
+        <h2>Your Tasks</h2>
+        <button onClick={logout} className="logout-btn">Logout</button>
+      </div>
 
-      <h1>My Tasks</h1>
+      <TaskForm onAdd={addTask} />
 
-      {/* Add Task Form */}
-      <form onSubmit={addTask} style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
-        <input
-          type="text"
-          placeholder="Add a new task..."
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          style={{ flex: 1, padding: '10px' }}
-        />
-        <select 
-          value={priority} 
-          onChange={(e) => setPriority(e.target.value)}
-          style={{ padding: '10px' }}
-        >
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-        <button type="submit" style={{ padding: '10px 20px', cursor: 'pointer', background: '#28a745', color: 'white', border: 'none' }}>
-          Add
-        </button>
-      </form>
+      <div className="filters">
+        <div>
+          <label>Filter by status:</label>
+          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div>
+          <label>Filter by category:</label>
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <option value="all">All</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label>Sort by:</label>
+          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="date">Date (Newest First)</option>
+            <option value="priority">Priority (High to Low)</option>
+          </select>
+        </div>
+      </div>
 
-      {/* Task List */}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {tasks.map(task => (
-          <li key={task.id} style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            padding: '15px',
-            borderBottom: '1px solid #eee',
-            background: task.completed ? '#f9f9f9' : 'white'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <input 
-                type="checkbox" 
-                checked={task.completed} 
-                onChange={() => toggleTask(task.id)}
-                style={{ cursor: 'pointer', width: '20px', height: '20px' }}
-              />
-              <div>
-                <span style={{ 
-                  textDecoration: task.completed ? 'line-through' : 'none',
-                  color: task.completed ? '#888' : 'black',
-                  fontSize: '18px',
-                  display: 'block'
-                }}>
-                  {task.text}
-                </span>
-                <small style={{ 
-                  color: task.priority === 'High' ? 'red' : task.priority === 'Medium' ? 'orange' : 'green',
-                  fontWeight: 'bold'
-                }}>
-                  {task.priority} Priority
-                </small>
+      <ul className="task-list">
+        {filteredTasks.length === 0 ? (
+          <li className="empty-state">No tasks found. Add one above!</li>
+        ) : (
+          filteredTasks.map(task => (
+            <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`} style={{ borderLeft: `4px solid ${getPriorityColor(task.priority)}` }}>
+              <div className="task-content">
+                <input type="checkbox" checked={task.completed} onChange={() => toggleTask(task.id)} />
+                <div>
+                  <strong>{task.title}</strong>
+                  {task.description && <p className="description">{task.description}</p>}
+                  <div className="task-meta">
+                    <span className="priority" style={{ color: getPriorityColor(task.priority) }}>{task.priority}</span>
+                    <span className="category">{task.category}</span>
+                    <span className="date">{new Date(task.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <button 
-              onClick={() => deleteTask(task.id)}
-              style={{ 
-                background: '#dc3545', 
-                color: 'white', 
-                border: 'none', 
-                padding: '5px 10px', 
-                cursor: 'pointer',
-                borderRadius: '4px'
-              }}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
+              <button onClick={() => deleteTask(task.id)} className="delete-btn">✕</button>
+            </li>
+          ))
+        )}
       </ul>
     </div>
   );
 }
+
+export const getPriorityColor = (priority) => {
+  const colors = { High: '#ff4444', Medium: '#ffbb33', Low: '#00C851' };
+  return colors[priority] || '#ccc';
+};

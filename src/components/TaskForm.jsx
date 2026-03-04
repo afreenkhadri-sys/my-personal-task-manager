@@ -1,60 +1,73 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
 export default function TaskForm({ onAdd }) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState('Medium')
-  const [category, setCategory] = useState('Personal')
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('Medium');
+  const [category, setCategory] = useState('Work');
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!title.trim()) return
-    onAdd({ title: title.trim(), description: description.trim(), priority, category })
-    setTitle('')
-    setDescription('')
-  }
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    const newTask = {
+      id: Date.now(),
+      title: title.trim(),
+      description: description.trim(),
+      priority,
+      category,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    onAdd(newTask);
+    setTitle('');
+    setDescription('');
+    setPriority('Medium');
+    setCategory('Work');
+  };
 
   return (
-    <form className="task-form" onSubmit={handleSubmit}>
-      <h2>Add a New Task</h2>
-      <div>
-        <label>Title</label>
+    <form onSubmit={handleSubmit} className="task-form">
+      <h3>Add New Task</h3>
+      <div className="form-group">
         <input
           type="text"
+          placeholder="Task title (required)"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g., Buy groceries"
+          required
         />
       </div>
-
-      <div>
-        <label>Description (optional)</label>
+      <div className="form-group">
         <textarea
+          placeholder="Description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="What needs to be done?"
+          rows="2"
         />
       </div>
-
-      <div>
-        <label>Priority</label>
-        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-        </select>
+      <div className="form-row">
+        <div className="form-group">
+          <label>Priority:</label>
+          <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Category:</label>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Health">Health</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
       </div>
-
-      <div>
-        <label>Category</label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="Work">Work</option>
-          <option value="Personal">Personal</option>
-          <option value="Shopping">Shopping</option>
-        </select>
-      </div>
-
-      <button type="submit">Add Task</button>
+      <button type="submit" className="add-btn">Add Task</button>
     </form>
-  )
+  );
 }
