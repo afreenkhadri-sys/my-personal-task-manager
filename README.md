@@ -17,7 +17,6 @@ Run npm run dev
 
 Open http://localhost:5174/my-personal-task-manager/login
 
-Or https://afreenkhadri-sys.github.io/my-personal-task-manager/login
 
 **Login Credentials**
 
