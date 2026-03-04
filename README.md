@@ -1,87 +1,45 @@
-# Personal Task Manager
+Personal Task Manager
+A task management web application built with React and Vite. It has a login system, a dashboard with weather, and a full task manager. It runs entirely in the browser using localStorage, so no backend or database is needed.
 
-A fully functional, self-contained task management web application built with React and Vite. Includes login, dashboard with live weather, and a feature-rich task manager — all running locally with zero backend.
-Personal Task Manager with Weather Dashboard,,.
+What It Does
+This app helps you keep track of daily tasks. After logging in, you can see a dashboard with current weather and stats on your productivity. You can add tasks, set their priority (High, Medium, Low), choose a category, and mark them as finished. Everything you do is saved to your browser so it stays there even if you refresh the page.
 
-**What It Does**
+Live Demo
+Try it here: https://afreenkhadri-sys.github.io/my-personal-task-manager/
 
-A React task management app with login, task tracking, and real-time weather. Features persistent storage, protected routes, and a responsive dashboard.
+How to Run Locally
+Clone this repository: git clone https://github.com/afreenkhadri-sys/my-personal-task-manager.git
+Go into the folder: cd my-personal-task-manager
+Install the dependencies (I included a package-lock.json for consistent builds): npm install
+Start the development server: npm run dev
+Open your browser to http://localhost:5173
+Login Credentials
+There is no real database, so you can log in with:
 
-**How to Run**
+Email: Any email address (e.g., test@test.com)
+Password: Any password you want (it just needs to be filled out)
+The app validates the email format and saves your session to the browser until you click logout.
 
-Clone the repository
+Tech Stack
+React 18 and Vite
+React Router for navigating between pages
+localStorage for saving your tasks and login state
+Open-Meteo API for real-time weather data
+Regular CSS for styling
 
-Run npm install
+How I Built It
+Routing and Security: I used React Router to create the pages. I built a ProtectedRoute component that checks if you are logged in. If you aren't, it sends you back to the login page so you can't see the dashboard.
+Task System: I made the task list update in real-time. When you add or delete a task, it updates the state and the localStorage at the same time.
+Weather Logic: I used the browser's geolocation to find your coordinates and fetch weather data. If your browser blocks location, I added a fallback that shows demo weather so the dashboard doesn't look empty.
 
-Run npm run dev
+Decisions and Challenges
+LocalStorage: I chose this because it's the easiest way to save data without needing a server. It makes the app fast and easy for anyone to run locally.
+Mock Data: One challenge was that my own laptop blocks location access. I decided to write a function that detects this and shows "Demo Weather" instead of an error message.
+Syncing Stats: It was tricky to get the dashboard stats (like "Tasks Completed") to stay in sync with the actual task list. I solved this by having the dashboard read the same localStorage data whenever it loads.
+Clean Styles: I used regular CSS files instead of a big framework like Bootstrap. This helped me practice my CSS skills and kept the project lightweight.
 
-Open http://localhost:5174/my-personal-task-manager/login
-
-
-**Login Credentials**
-
-Use any valid email format (e.g., user@example.com) with any password.
-
-**Tech Stack**
-
-React 18 with Vite
-
-React Router for navigation
-
-localStorage for data persistence
-
-Open-Meteo API for weather (no API key required)
-
-**How I Built It**
-
-1. Set Up Routing First
-
-I created all three pages (Login, Dashboard, Tasks) and connected them with React Router before adding features. This helped me understand the navigation flow clearly.
-
-2. Built Protected Routes
-
-I created a ProtectedRoute component that checks if the user is logged in. If not, it redirects to /login. This prevents unauthorized access to Dashboard and Tasks pages.
-
-3. Implemented Authentication
-
-Login validates email format and required fields, then saves isLoggedIn and userEmail to localStorage. On logout, I clear all data including tasks to ensure a clean slate.
-
-4. Built Task Management
-
-Taskss store title, description, priority, category, and completion status in localStorage. Users can add, delete, mark complete, and filter by category or status.
-
-5. Added Weather Widget
-
-I used browser geolocation and Open-Meteo API for real weather. When geolocation is denied, I show mock weather with a clear note: 'Location unavailable. Showing demo weather.' This ensures thee UI never breaks.
-
-Key Decisions I Made
-
-Component Structure
-
-I kept components small and focused. Each page handles its own state using useState and useEffect hooks. No external state management library was needed for this project.
-
-Data Persistence
-
-localStorage was the right choice because it's simple, free, and works for this project scope. Tasks persist across page refreshes and only clear on logout.,
-
-Weather Fallback
-
-My laptop has geolocation disabled. Instead of treating this as an error, I created realistic mock weather so the app always works. Users see a small disclaimer if location is unavailable.,
-
-Styling
-
-Vanilla CSS with inline styles keeps the codebase lightweight and easier   to understand and modify.
-
-Challenges & Solutions
-
-Challenge: Understanding Protected Routes
-
-Solution: I researched React Router patterns, understood the logic, then built my own ProtectedRoute component. It checks authentication state before rendering protected pages.
-
-Challenge: Geolocation Not Working
-
-Solution: I implemented a graceful fallback system with mock data and user notifications instead of showing errors.
-
-Challenge: Keeping Tasks in Sync
-
-Solution: I use localStorage as single source of truth and update it whenever tasks change. Statistics recalculate automatically from task state.
+Project Structure
+src/components/Login.jsx: Handles email validation and session start.
+src/components/Dashboard.jsx: Shows weather API data and task stats.
+src/components/Tasks.jsx: The main logic for adding, filtering, and deleting tasks.
+src/components/ProtectedRoute.jsx: Simple check to keep the app private.
