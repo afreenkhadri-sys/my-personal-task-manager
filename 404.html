@@ -1,21 +1,16 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
+<head>
     <title>Personal Task Manager</title>
-    <script type="text/javascript">
-      
-      var pathSegmentToKeep = 1;
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentToKeep).join('/') + '/?p=/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentToKeep).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.replace(/&/g, '~and~') : '') +
-        l.hash
-      );
+</head>
+<body>
+    <script>
+        // Simple redirect to da main page
+        window.location.href = '/my-personal-task-manager/';
     </script>
-  </head>
-  <body>
-  </body>
+    <noscript>
+        <p>Please enable JavaScript to use this app.</p>
+        <a href="/my-personal-task-manager/">Go to Login</a>
+    </noscript>
+</body>
 </html>
