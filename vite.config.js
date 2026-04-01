@@ -3,5 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/my-personal-task-manager/', // key
+  base: '/my-personal-task-manager/', // Added as requested for GitHub Pages routing fix
 })
+
+
