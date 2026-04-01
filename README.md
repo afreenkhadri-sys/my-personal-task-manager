@@ -1,4 +1,9 @@
 Personal Task Manager
+
+## Recent Updates
+- **Fixed GitHub Pages routing:** Configured Vite base path and added a custom 404 fallback to ensure deep links work correctly on GitHub Pages.
+- **Dev server optimization:** Updated configuration for smoother local development.
+
 A task management web application built with React and Vite. It has a login system, a dashboard with weather, and a full task manager. It runs entirely in the browser using localStorage, so no backend or database is needed.
 
 What It Does
@@ -21,7 +26,7 @@ Password: Any password you want (it just needs to be filled out)
 The app validates the email format and saves your session to the browser until you click logout.
 
 Tech Stack
-React 18 and Vite
+React 19 and Vite
 React Router for navigating between pages
 localStorage for saving your tasks and login state
 Open-Meteo API for real-time weather data
