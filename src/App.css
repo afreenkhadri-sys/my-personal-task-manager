@@ -338,7 +338,7 @@ body {
   justify-content: center;
   cursor: pointer;
   margin-left: 0.5rem;
-  shrink: 0;
+  stroke: 0;
 }
 
 .delete-btn:hover {
